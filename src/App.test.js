@@ -1,6 +1,6 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import App from './App';
+import App, { replaceCamelCaseWithSpaces } from './App';
 
 // React Testing Library is highly opinionated (it encourages testers
 // to write tests in a special way).
@@ -32,20 +32,23 @@ test('renders learn react link', () => {
   // expect(linkElement).toBeInTheDocument();
 });
 
+// FUNCTIONAL TESTING
 test('button has the correct initial color and text', () => {
   render(<App />);
   // this line of code actually tests a couple of things already:
   // - that we have a button in the DOM
   // - that it has the specified text
   // If these conditions are not fulfilled then we are not going to find the element
-  const element = screen.getByRole('button', { name: 'Change to blue' });
+  const element = screen.getByRole('button', {
+    name: 'Change to Midnight Blue',
+  });
   // IMPORTANT: there is a known bug - asserting the style in a camelCase
   // notation can be false-positive, so to make a 100% correct assertion
   // we should use a kebab-case notation here ("background-color" instead of "backgroundColor"):
-  expect(element).toHaveStyle({ 'background-color': 'red' });
+  expect(element).toHaveStyle({ 'background-color': 'MediumVioletRed' });
 });
 
-test('button turns blue after click and changes the text', () => {
+test('button turns Midnight Blue after click and changes the text', () => {
   // if we are uncertain about current roles our App elements have, and we have
   // a hard time trying to query an element by role, then there is a very
   // helpful method - "logRoles". To use it we need to
@@ -55,17 +58,21 @@ test('button turns blue after click and changes the text', () => {
   // and finally use "logRoles" to get the list of available roles in the container:
   // logRoles(container);
   render(<App />);
-  const element = screen.getByRole('button', { name: 'Change to blue' });
+  const element = screen.getByRole('button', {
+    name: 'Change to Midnight Blue',
+  });
 
   fireEvent.click(element);
 
-  expect(element).toHaveStyle({ 'background-color': 'blue' });
-  expect(element).toHaveTextContent('Change to red');
+  expect(element).toHaveStyle({ 'background-color': 'MidnightBlue' });
+  expect(element).toHaveTextContent('Change to Medium Violet Red');
 });
 
 test('button starts enabled and checkbox starts unchecked', () => {
   render(<App />);
-  const button = screen.getByRole('button', { name: 'Change to blue' });
+  const button = screen.getByRole('button', {
+    name: 'Change to Midnight Blue',
+  });
   const checkbox = screen.getByRole('checkbox');
 
   expect(button).toBeEnabled();
@@ -74,7 +81,9 @@ test('button starts enabled and checkbox starts unchecked', () => {
 
 test('button is disabled if checkbox is checked and is re-enabled if checkbox unchecked', () => {
   render(<App />);
-  const button = screen.getByRole('button', { name: 'Change to blue' });
+  const button = screen.getByRole('button', {
+    name: 'Change to Midnight Blue',
+  });
   // if a checkbox has an associated label (which it should have!)
   // then we can specify "name" parameter in the "options" object and
   // in this case "name" will be equal to "label"'s textContent
@@ -89,21 +98,40 @@ test('button is disabled if checkbox is checked and is re-enabled if checkbox un
 
 test('button turns grey when checkbox is checked and has previous color if checkbox is unchecked', () => {
   render(<App />);
-  const button = screen.getByRole('button', { name: 'Change to blue' });
+  const button = screen.getByRole('button', {
+    name: 'Change to Midnight Blue',
+  });
   const checkbox = screen.getByRole('checkbox', { name: 'Disable button' });
 
   fireEvent.click(checkbox);
   expect(button).toHaveStyle({ 'background-color': 'grey' });
 
   fireEvent.click(checkbox);
-  expect(button).toHaveStyle({ 'background-color': 'red' });
+  expect(button).toHaveStyle({ 'background-color': 'MediumVioletRed' });
 
   fireEvent.click(button);
-  expect(button).toHaveStyle({ 'background-color': 'blue' });
+  expect(button).toHaveStyle({ 'background-color': 'MidnightBlue' });
 
   fireEvent.click(checkbox);
   expect(button).toHaveStyle({ 'background-color': 'grey' });
 
   fireEvent.click(checkbox);
-  expect(button).toHaveStyle({ 'background-color': 'blue' });
+  expect(button).toHaveStyle({ 'background-color': 'MidnightBlue' });
+});
+
+// UNIT TESTING
+describe('replaceCamelCaseWithSpaces inserts spaces before capital letters in camelCase and should', () => {
+  test('work for words with no capital letters', () => {
+    expect(replaceCamelCaseWithSpaces('Red')).toBe('Red');
+  });
+
+  test('work for words with inner capital letters', () => {
+    expect(replaceCamelCaseWithSpaces('MidnightBlue')).toBe('Midnight Blue');
+  });
+
+  test('work for words with outer (beginning or ending with) capital letters', () => {
+    expect(replaceCamelCaseWithSpaces('MediumVioletRed')).toBe(
+      'Medium Violet Red',
+    );
+  });
 });
