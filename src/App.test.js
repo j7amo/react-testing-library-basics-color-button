@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import App from './App';
 
 // React Testing Library is highly opinionated (it encourages testers
@@ -30,4 +30,80 @@ test('renders learn react link', () => {
   // And this is the CORRECT WAY of querying the link:
   // const linkElement = screen.getByRole('link', { name: /learn react/i });
   // expect(linkElement).toBeInTheDocument();
+});
+
+test('button has the correct initial color and text', () => {
+  render(<App />);
+  // this line of code actually tests a couple of things already:
+  // - that we have a button in the DOM
+  // - that it has the specified text
+  // If these conditions are not fulfilled then we are not going to find the element
+  const element = screen.getByRole('button', { name: 'Change to blue' });
+  // IMPORTANT: there is a known bug - asserting the style in a camelCase
+  // notation can be false-positive, so to make a 100% correct assertion
+  // we should use a kebab-case notation here ("background-color" instead of "backgroundColor"):
+  expect(element).toHaveStyle({ 'background-color': 'red' });
+});
+
+test('button turns blue after click and changes the text', () => {
+  // if we are uncertain about current roles our App elements have, and we have
+  // a hard time trying to query an element by role, then there is a very
+  // helpful method - "logRoles". To use it we need to
+  // - render a component that we want test;
+  // - use destructuring to get access to "container" object
+  // const { container } = render(<App />);
+  // and finally use "logRoles" to get the list of available roles in the container:
+  // logRoles(container);
+  render(<App />);
+  const element = screen.getByRole('button', { name: 'Change to blue' });
+
+  fireEvent.click(element);
+
+  expect(element).toHaveStyle({ 'background-color': 'blue' });
+  expect(element).toHaveTextContent('Change to red');
+});
+
+test('button starts enabled and checkbox starts unchecked', () => {
+  render(<App />);
+  const button = screen.getByRole('button', { name: 'Change to blue' });
+  const checkbox = screen.getByRole('checkbox');
+
+  expect(button).toBeEnabled();
+  expect(checkbox).not.toBeChecked();
+});
+
+test('button is disabled if checkbox is checked and is re-enabled if checkbox unchecked', () => {
+  render(<App />);
+  const button = screen.getByRole('button', { name: 'Change to blue' });
+  // if a checkbox has an associated label (which it should have!)
+  // then we can specify "name" parameter in the "options" object and
+  // in this case "name" will be equal to "label"'s textContent
+  const checkbox = screen.getByRole('checkbox', { name: 'Disable button' });
+
+  fireEvent.click(checkbox);
+  expect(button).toBeDisabled();
+
+  fireEvent.click(checkbox);
+  expect(button).toBeEnabled();
+});
+
+test('button turns grey when checkbox is checked and has previous color if checkbox is unchecked', () => {
+  render(<App />);
+  const button = screen.getByRole('button', { name: 'Change to blue' });
+  const checkbox = screen.getByRole('checkbox', { name: 'Disable button' });
+
+  fireEvent.click(checkbox);
+  expect(button).toHaveStyle({ 'background-color': 'grey' });
+
+  fireEvent.click(checkbox);
+  expect(button).toHaveStyle({ 'background-color': 'red' });
+
+  fireEvent.click(button);
+  expect(button).toHaveStyle({ 'background-color': 'blue' });
+
+  fireEvent.click(checkbox);
+  expect(button).toHaveStyle({ 'background-color': 'grey' });
+
+  fireEvent.click(checkbox);
+  expect(button).toHaveStyle({ 'background-color': 'blue' });
 });
